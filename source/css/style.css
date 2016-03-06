@@ -1,0 +1,19 @@
+.product_list {
+  float: left;
+  margin-top: 15px;
+  width: 70%;
+}
+
+.search_filters {
+  float: left;
+  margin-top: 15px;
+  width: 30%;
+}
+
+.checkbox {display: block;}
+
+.inner-content {
+  float: left;
+  min-height: 350px;
+  width: 25%;
+}
