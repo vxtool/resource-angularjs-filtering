@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="no-js" lang="pt-BR" xml:lang="pt-BR">
+<html class="no-js" lang="pt-BR" xml:lang="pt-BR" ng-app='filter'>
 	<head>
 		<meta charset="utf-8">
 		<title>Filter with AngularJS</title>
@@ -10,8 +10,93 @@
 	      var tagHtml = document.getElementsByTagName("html")[0];
 	          tagHtml.className = tagHtml.className.replace('no-js', 'js');
 	    </script>
+      <link rel="stylesheet" type="text/css" href="node_modules/angular-material/angular-material.min.css">
+      <link rel="stylesheet" type="text/css" href="source/css/style.css">
 	</head>
-	<body>
-    
+	<body ng-controller="IndexController">
+    <section class="container">
+      <h2>Search results for "{{searchTerm}}" ({{ (filteredProducts| filter: searchTerm).length}})</h2>
+      <p>Search: <input id="search-input" type="text" placeholder="Search" name="q" data-ng-model="searchTerm"></p>
+    </section>
+    <section>
+      <div>
+        <button type="button" class="btn btn-default btn-xs" data-ng-click="setOrder('2', 'Brand', false)" data-ng-class="{active: sorting.id  === '2'}">Name A-Z</button>
+        <button type="button" class="btn btn-default btn-xs" data-ng-click="setOrder('3', 'Brand', true)" data-ng-class="{active: sorting.id  === '3'}">Name Z-A</button>
+        <button type="button" class="btn btn-default btn-xs" data-ng-click="setOrder('4', 'Price', false)" data-ng-class="{active: sorting.id  === '4'}">Price Low-High</button>
+        <button type="button" class="btn btn-default btn-xs" data-ng-click="setOrder('5', 'Price', true)" data-ng-class="{active: sorting.id  === '5'}">Price High-Low</button>
+      </div>
+    </section>
+    <aside class="search_filters">
+      <div class="facets">
+        <section class="facetgroup" ng-if="filteredProducts.length > 0">
+          <h4>Brands</h4>
+          <div data-ng-repeat="brand in brandsGroup | limitTo: maxBrands" data-ng-if="(filteredProducts | filter:searchTerm | filter:filterCount('Brand', brand)).length > 0">
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="useBrands[brand]" />
+              {{brand}} <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Brand', brand)).length }})</span>
+            </label>
+          </div>
+          <span data-ng-show="maxBrands<6" class="link" data-ng-click="maxBrands = 100">More</span>
+          <span data-ng-show="maxBrands>5" class="link" data-ng-click="maxBrands = 5">Less</span>
+        </section>
+        <section class="facetgroup" ng-if="filteredProducts.length > 0">
+          <h4>Labels</h4>
+          <div>
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="filters.Label['New Product']" />
+              New Product <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Labels', 'New Product')).length }})</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="filters.Label['As Advertised']" />
+              As Advertised <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Labels', 'As Advertised')).length }})</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="filters.Label['Bargain Buy']" />
+              Bargain Buy <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Labels', 'Bargain Buy')).length }})</span>
+            </label>
+          </div>
+        </section>
+        <section class="facetgroup" ng-if="filteredProducts.length > 0">
+          <h4>Callouts</h4>
+          <div>
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="filters.Callout['Sale']" />
+              Sale <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Labels', 'Sale')).length }})</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="filters.Callout['Clearance']" />
+              Clearance <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Labels', 'Clearance')).length }})</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" data-ng-model="filters.Callout['Bonus Offer']" />
+              Bonus Offer <span>({{ (filteredProducts | filter:searchTerm | filter:filterCount('Callout', 'Bonus Offer')).length }})</span>
+            </label>
+          </div>
+        </section>
+      </div>
+    </aside>
+    <div class="product_list">
+      <article data-ng-repeat="product in filteredProducts | filter:searchTerm | orderBy: sorting.order:sorting.direction" id="{{product.Sku}}" class="product col-sm-4">
+        <b class="decor" data-ng-hide="!product.Labels[0]">{{product.Labels[0]}}</b>
+        <b class="decor" data-ng-show="!product.Labels[0] && product.Callout[0]">{{product.Callout[0]}}</b>
+        <div class="inner-content"> <a class="thumb" data-sku="{{product.Sku}}" data-ng-href="#/product/{{product.Sku}}"> <img src="http://placehold.it/180x180"> </a>
+          <div class="clearfix">
+            <h4 class="productname" name="{{product.Heading}}"><a data-ng-href="#/product/{{product.Sku}}">{{product.Brand}} {{product.Heading}}</a></h4>
+            <div class="price" price="{{product.Price}}"><sup>$</sup><span>{{product.Price}}</span>
+              <div ng-if="product.WasPrice > 0 && product.WasPrice > product.Price" class="wasprice">was $<span>{{product.WasPrice}}</span> </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <script src="node_modules/angular/angular.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="node_modules/angular-animate/angular-animate.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="node_modules/angular-aria/angular-aria.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="node_modules/angular-material/angular-material.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/js/app.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/js/filter/filterFilter.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/js/filter/filterService.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/js/filter/indexController.js" type="text/javascript" charset="utf-8"></script>
 	</body>
 </html>
